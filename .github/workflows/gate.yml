@@ -1,0 +1,49 @@
+name: Gate Build 🔒
+
+on: [pull_request]
+# on:
+#   workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository 👀
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # - name: Test 🧪
+      #   uses: game-ci/unity-test-runner@v2
+      #   env:
+      #     UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      #   with:
+      #     githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Upload test results ⬆️
+      #   uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: Test results
+      #     path: artifacts
+
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+          restore-keys: Library-
+
+      - name: Build WebGL 🛠️
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          allowDirtyBuild: true
